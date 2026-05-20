@@ -1,0 +1,680 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>GH-NAF · CVPR 2026</title>
+<meta name="description" content="GH-NAF: Grid-Adaptive Hash-Level Attended Neural Attenuation Fields for Discrepancy-Aware CBCT. CVPR 2026." />
+
+<meta property="og:title" content="GH-NAF · CVPR 2026" />
+<meta property="og:description" content="Grid-Adaptive Hash-Level Attended Neural Attenuation Fields for Discrepancy-Aware CBCT" />
+<meta property="og:type" content="website" />
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght,SOFT@9..144,300..700,0..100&family=Geist:wght@300..600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+
+<style>
+  :root {
+    --bg:          #faf7f0;
+    --bg-grid:     #f3eee2;
+    --surface:     #ffffff;
+    --surface-2:   #f6f1e4;
+    --ink:         #161821;
+    --ink-2:       #2d3142;
+    --muted:       #6b6f7d;
+    --line:        #e3dccb;
+    --line-strong: #c9bf9f;
+    --accent:      #0d6e7a;
+    --accent-ink:  #084e57;
+    --accent-soft: #d6ecee;
+    --warm:        #b04a1c;
+    --warm-soft:   #f6e3d4;
+    --shadow:      0 1px 0 rgba(22,24,33,.04), 0 8px 24px -12px rgba(22,24,33,.12);
+
+    --serif: "Fraunces", ui-serif, Georgia, "Times New Roman", serif;
+    --sans:  "Geist", ui-sans-serif, system-ui, -apple-system, "Helvetica Neue", Arial;
+    --mono:  "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
+  }
+
+  * { box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+  body {
+    margin: 0;
+    background: var(--bg);
+    color: var(--ink);
+    font-family: var(--sans);
+    font-size: 17px;
+    line-height: 1.65;
+    -webkit-font-smoothing: antialiased;
+    background-image:
+      linear-gradient(var(--bg-grid) 1px, transparent 1px),
+      linear-gradient(90deg, var(--bg-grid) 1px, transparent 1px);
+    background-size: 56px 56px;
+    background-position: -1px -1px;
+  }
+
+  ::selection { background: var(--accent); color: #fff; }
+
+  .narrow { max-width: 880px; margin: 0 auto; padding: 0 28px; }
+  .wide   { max-width: 1120px; margin: 0 auto; padding: 0 28px; }
+
+  /* ---------- nav ---------- */
+  nav.top {
+    position: sticky; top: 0; z-index: 50;
+    background: color-mix(in srgb, var(--bg) 88%, transparent);
+    backdrop-filter: saturate(140%) blur(10px);
+    -webkit-backdrop-filter: saturate(140%) blur(10px);
+    border-bottom: 1px solid var(--line);
+  }
+  nav.top .wide {
+    display: flex; align-items: center; justify-content: space-between;
+    height: 58px;
+  }
+  nav.top .brand {
+    font-family: var(--serif);
+    font-weight: 600;
+    font-size: 1.05rem;
+    letter-spacing: -0.01em;
+    display: flex; align-items: center; gap: 10px;
+  }
+  nav.top .brand .dot {
+    width: 9px; height: 9px; border-radius: 999px;
+    background: var(--accent); display: inline-block;
+    box-shadow: 0 0 0 3px var(--accent-soft);
+  }
+  nav.top ul {
+    display: flex; gap: 22px; list-style: none; margin: 0; padding: 0;
+    font-size: 0.92rem;
+  }
+  nav.top a {
+    color: var(--ink-2); text-decoration: none;
+    border-bottom: 1px solid transparent;
+    padding-bottom: 2px; transition: border-color .15s;
+  }
+  nav.top a:hover { border-bottom-color: var(--accent); }
+  @media (max-width: 720px) { nav.top ul { display: none; } }
+
+  /* ---------- hero ---------- */
+  header.hero { padding: 80px 0 40px; position: relative; overflow: hidden; }
+  header.hero::before {
+    content: ""; position: absolute; inset: 0;
+    background:
+      radial-gradient(ellipse 60% 50% at 80% 0%, rgba(13,110,122,.10), transparent 60%),
+      radial-gradient(ellipse 50% 40% at 10% 30%, rgba(176,74,28,.07), transparent 60%);
+    pointer-events: none;
+  }
+  .venue {
+    display: inline-flex; align-items: center; gap: 10px;
+    font-family: var(--mono); font-size: .78rem;
+    letter-spacing: .14em; text-transform: uppercase;
+    background: var(--surface);
+    border: 1px solid var(--line);
+    color: var(--ink-2);
+    padding: 7px 14px; border-radius: 999px;
+    box-shadow: var(--shadow);
+  }
+  .venue strong { color: var(--accent); font-weight: 600; letter-spacing: .14em; }
+
+  h1.title {
+    font-family: var(--serif);
+    font-weight: 500;
+    font-variation-settings: "opsz" 144, "SOFT" 30;
+    font-size: clamp(2.4rem, 6vw, 4.6rem);
+    line-height: 1.04;
+    letter-spacing: -0.025em;
+    margin: 26px 0 14px;
+    color: var(--ink);
+  }
+  h1.title .kw { color: var(--accent); font-style: italic; font-weight: 400; }
+  h1.title .name {
+    display: inline-block;
+    background: linear-gradient(180deg, transparent 62%, color-mix(in srgb, var(--accent-soft) 80%, transparent) 62%);
+    padding: 0 .12em;
+  }
+  .subtitle {
+    font-family: var(--serif);
+    font-style: italic;
+    font-weight: 300;
+    font-size: clamp(1.05rem, 2vw, 1.3rem);
+    color: var(--ink-2);
+    max-width: 720px;
+    margin: 0 0 36px;
+  }
+
+  .authors {
+    display: flex; flex-wrap: wrap; gap: 4px 18px;
+    font-size: 1.02rem; color: var(--ink-2);
+    margin-bottom: 8px;
+  }
+  .authors a {
+    color: var(--ink-2);
+    text-decoration: none;
+    border-bottom: 1px dotted var(--line-strong);
+    padding-bottom: 1px;
+    transition: color .15s, border-color .15s;
+  }
+  .authors a:hover { color: var(--accent); border-bottom-color: var(--accent); }
+  .authors sup { color: var(--accent); font-weight: 600; font-size: .8em; }
+  .legend {
+    font-size: .82rem; color: var(--muted);
+    margin-bottom: 32px;
+  }
+  .legend sup { color: var(--accent); }
+
+  .actions { display: flex; flex-wrap: wrap; gap: 10px; }
+  .btn {
+    display: inline-flex; align-items: center; gap: 8px;
+    font-family: var(--sans); font-size: .92rem; font-weight: 500;
+    padding: 10px 16px;
+    border-radius: 999px;
+    border: 1px solid var(--line-strong);
+    background: var(--surface);
+    color: var(--ink);
+    text-decoration: none;
+    transition: transform .12s ease, box-shadow .15s, border-color .15s, background .15s;
+    box-shadow: var(--shadow);
+  }
+  .btn:hover { transform: translateY(-1px); border-color: var(--accent); color: var(--accent-ink); }
+  .btn.primary {
+    background: var(--ink); color: var(--bg); border-color: var(--ink);
+  }
+  .btn.primary:hover { background: var(--accent); border-color: var(--accent); color: #fff; }
+  .btn.disabled {
+    color: var(--muted); cursor: not-allowed; background: var(--surface-2);
+    border-style: dashed; border-color: var(--line-strong);
+  }
+  .btn.disabled:hover { transform: none; border-color: var(--line-strong); color: var(--muted); }
+  .btn svg { width: 15px; height: 15px; }
+  .btn .tag {
+    font-family: var(--mono); font-size: .7rem;
+    padding: 1px 6px; border-radius: 4px;
+    background: var(--warm-soft); color: var(--warm);
+    margin-left: 4px;
+  }
+
+  /* ---------- key insight ---------- */
+  section.insight {
+    margin-top: 56px;
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-radius: 18px;
+    padding: 36px 40px;
+    box-shadow: var(--shadow);
+    position: relative;
+  }
+  section.insight::before {
+    content: "Key Insight";
+    position: absolute; top: -12px; left: 28px;
+    font-family: var(--mono); font-size: .72rem; font-weight: 500;
+    letter-spacing: .18em; text-transform: uppercase;
+    background: var(--bg); padding: 3px 12px;
+    color: var(--accent);
+    border: 1px solid var(--line);
+    border-radius: 999px;
+  }
+  section.insight p {
+    font-family: var(--serif);
+    font-size: 1.2rem;
+    line-height: 1.55;
+    margin: 0;
+    color: var(--ink);
+    font-weight: 400;
+  }
+  section.insight em { color: var(--accent); font-style: italic; font-weight: 500; }
+  section.insight b { font-weight: 600; }
+
+  /* ---------- section ---------- */
+  section.block { padding: 90px 0 0; }
+  .eyebrow {
+    display: inline-flex; align-items: baseline; gap: 12px;
+    font-family: var(--mono); font-size: .76rem;
+    letter-spacing: .2em; text-transform: uppercase;
+    color: var(--muted); margin-bottom: 18px;
+  }
+  .eyebrow .num {
+    font-family: var(--serif); font-style: italic;
+    font-size: 1.5rem; color: var(--accent);
+    letter-spacing: 0;
+  }
+  h2.heading {
+    font-family: var(--serif);
+    font-weight: 500;
+    font-size: clamp(1.9rem, 3.6vw, 2.6rem);
+    line-height: 1.12;
+    letter-spacing: -0.02em;
+    margin: 0 0 28px;
+    max-width: 820px;
+  }
+  p.body { max-width: 720px; color: var(--ink-2); margin: 0; }
+  .body em { color: var(--accent-ink); font-style: italic; }
+  .body b { color: var(--ink); font-weight: 600; }
+
+  /* contributions */
+  .contribs {
+    display: grid; gap: 16px;
+    grid-template-columns: repeat(3, 1fr);
+    margin-top: 8px;
+  }
+  @media (max-width: 880px) { .contribs { grid-template-columns: 1fr; } }
+  .contrib {
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-radius: 16px;
+    padding: 26px 24px;
+    box-shadow: var(--shadow);
+  }
+  .contrib .idx {
+    font-family: var(--serif); font-style: italic;
+    font-size: 2rem; color: var(--accent);
+    line-height: 1; margin-bottom: 14px;
+    display: block;
+  }
+  .contrib h4 {
+    font-family: var(--serif); font-weight: 500;
+    font-size: 1.15rem; margin: 0 0 8px;
+    letter-spacing: -0.01em;
+  }
+  .contrib p {
+    margin: 0; font-size: .95rem; color: var(--ink-2); line-height: 1.55;
+  }
+
+  /* figure */
+  figure.fig {
+    margin: 28px 0 0;
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-radius: 16px;
+    padding: 22px;
+    box-shadow: var(--shadow);
+  }
+  figure.fig img { display: block; width: 100%; height: auto; border-radius: 8px; }
+  figure.fig figcaption {
+    margin-top: 14px; font-size: .9rem;
+    color: var(--ink-2); line-height: 1.55;
+    border-top: 1px dashed var(--line);
+    padding-top: 12px;
+  }
+  figure.fig figcaption b { color: var(--ink); font-weight: 600; }
+
+  /* image placeholder */
+  .placeholder {
+    width: 100%; aspect-ratio: 16/7;
+    background:
+      linear-gradient(135deg, var(--surface-2), var(--bg-grid)),
+      repeating-linear-gradient(45deg, transparent 0 8px, rgba(13,110,122,.06) 8px 9px);
+    background-blend-mode: multiply;
+    border: 1px dashed var(--line-strong);
+    border-radius: 8px;
+    display: flex; align-items: center; justify-content: center;
+    color: var(--muted);
+    font-family: var(--mono); font-size: .82rem; letter-spacing: .1em;
+    text-transform: uppercase;
+  }
+
+  /* stats */
+  .stats {
+    display: grid; gap: 14px;
+    grid-template-columns: repeat(4, 1fr);
+    margin-top: 28px;
+  }
+  @media (max-width: 880px) { .stats { grid-template-columns: repeat(2, 1fr); } }
+  .stat {
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-radius: 14px;
+    padding: 22px 20px;
+    box-shadow: var(--shadow);
+  }
+  .stat .v {
+    font-family: var(--serif); font-weight: 500;
+    font-size: 2.1rem; line-height: 1; letter-spacing: -0.02em;
+    color: var(--accent);
+    display: block; margin-bottom: 8px;
+  }
+  .stat .v .unit { font-size: 1rem; color: var(--ink-2); margin-left: 2px; }
+  .stat .l {
+    font-family: var(--mono); font-size: .7rem;
+    letter-spacing: .14em; text-transform: uppercase;
+    color: var(--muted);
+  }
+  .stat .l small { display: block; text-transform: none; letter-spacing: 0; color: var(--ink-2); font-size: .82rem; font-family: var(--sans); margin-top: 4px; }
+
+  /* sub-section label */
+  .sublabel {
+    display: inline-block;
+    font-family: var(--mono); font-size: .72rem;
+    letter-spacing: .14em; text-transform: uppercase;
+    color: var(--accent);
+    margin: 56px 0 6px;
+    padding: 3px 10px;
+    background: var(--accent-soft);
+    border-radius: 4px;
+  }
+  .subtitle-2 {
+    font-family: var(--serif); font-weight: 500;
+    font-size: 1.4rem;
+    margin: 0 0 12px;
+    letter-spacing: -0.01em;
+  }
+
+  /* bibtex */
+  .bibtex-wrap {
+    margin-top: 8px;
+    background: var(--ink);
+    color: #e7e3d4;
+    border-radius: 14px;
+    overflow: hidden;
+    position: relative;
+    box-shadow: var(--shadow);
+  }
+  .bibtex-head {
+    display: flex; justify-content: space-between; align-items: center;
+    padding: 12px 18px;
+    border-bottom: 1px solid rgba(255,255,255,.08);
+    font-family: var(--mono); font-size: .74rem;
+    letter-spacing: .14em; text-transform: uppercase;
+    color: #c9bf9f;
+  }
+  .copy-btn {
+    background: transparent;
+    border: 1px solid rgba(255,255,255,.18);
+    color: #e7e3d4;
+    font-family: var(--mono); font-size: .72rem; letter-spacing: .1em;
+    padding: 5px 11px; border-radius: 999px;
+    cursor: pointer; transition: background .15s;
+  }
+  .copy-btn:hover { background: rgba(255,255,255,.08); }
+  .copy-btn.copied { background: var(--accent); border-color: var(--accent); color: #fff; }
+  pre.bib {
+    margin: 0; padding: 22px 24px;
+    font-family: var(--mono); font-size: .86rem; line-height: 1.65;
+    overflow-x: auto;
+    color: #efe9d8;
+  }
+  pre.bib .k { color: #8dd0d8; }
+  pre.bib .s { color: #f0c987; }
+
+  /* footer */
+  footer {
+    margin-top: 100px;
+    padding: 40px 0 50px;
+    border-top: 1px solid var(--line);
+    background: var(--surface-2);
+  }
+  footer .wide {
+    display: flex; flex-wrap: wrap; justify-content: space-between;
+    gap: 18px; font-size: .88rem; color: var(--muted);
+  }
+  footer .wide a { color: var(--ink-2); text-decoration: none; border-bottom: 1px dotted var(--line-strong); }
+  footer .wide a:hover { color: var(--accent); border-bottom-color: var(--accent); }
+  footer .left { font-family: var(--serif); font-style: italic; color: var(--ink-2); }
+
+  /* reveal on scroll */
+  .reveal { opacity: 0; transform: translateY(10px); transition: opacity .6s ease, transform .6s ease; }
+  .reveal.in { opacity: 1; transform: none; }
+  @media (prefers-reduced-motion: reduce) {
+    .reveal { opacity: 1; transform: none; transition: none; }
+    html { scroll-behavior: auto; }
+  }
+</style>
+</head>
+<body>
+
+<nav class="top">
+  <div class="wide">
+    <div class="brand"><span class="dot"></span> GH-NAF</div>
+    <ul>
+      <li><a href="#abstract">Abstract</a></li>
+      <li><a href="#method">Method</a></li>
+      <li><a href="#results">Results</a></li>
+      <li><a href="#bibtex">BibTeX</a></li>
+    </ul>
+  </div>
+</nav>
+
+<!-- ============== HERO ============== -->
+<header class="hero">
+  <div class="narrow">
+    <div class="venue"><strong>CVPR&nbsp;2026</strong> · Main Conference</div>
+
+    <h1 class="title">
+      <span class="name">GH-NAF</span><br/>
+      <span class="kw">Grid-Adaptive</span> Hash-Level Attended<br/>
+      Neural Attenuation Fields
+    </h1>
+    <p class="subtitle">
+      Discrepancy-aware sparse-view CBCT reconstruction via frequency-disentangled
+      attention over multi-resolution hash grids.
+    </p>
+
+    <div class="authors">
+      <span><a href="https://openreview.net/profile?id=~Seong_Je_Oh1" target="_blank" rel="noopener">Seong Je Oh</a><sup>*†</sup></span>
+      <span><a href="https://openreview.net/profile?id=~Ju_Hwan_Lee1" target="_blank" rel="noopener">Ju Hwan Lee</a><sup>*</sup></span>
+      <span><a href="https://openreview.net/profile?id=~Chae_Yeon_Lim1" target="_blank" rel="noopener">Chae Yeon Lim</a><sup>*</sup></span>
+      <span><a href="https://openreview.net/profile?id=~Donghwan_Lee8" target="_blank" rel="noopener">Donghwan Lee</a></span>
+      <span><a href="https://openreview.net/profile?id=~Myung_Jin_Chung1" target="_blank" rel="noopener">Myung Jin Chung</a></span>
+      <span><a href="https://openreview.net/profile?id=~Kyungsu_Kim3" target="_blank" rel="noopener">Kyungsu Kim</a><sup>†</sup></span>
+    </div>
+    <p class="legend"><sup>*</sup> Equal contribution &nbsp;·&nbsp; <sup>†</sup> Corresponding authors</p>
+
+    <div class="actions">
+      <a class="btn disabled" aria-disabled="true" title="Coming soon">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/></svg>
+        Paper <span class="tag">Incoming</span>
+      </a>
+      <a class="btn" href="https://github.com/seongje-oh/GH-NAF" target="_blank" rel="noopener">
+        <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 .5C5.65.5.5 5.65.5 12c0 5.08 3.29 9.39 7.86 10.91.58.1.79-.25.79-.56v-2c-3.2.7-3.87-1.36-3.87-1.36-.52-1.33-1.27-1.68-1.27-1.68-1.04-.71.08-.7.08-.7 1.15.08 1.76 1.18 1.76 1.18 1.03 1.76 2.69 1.25 3.35.96.1-.74.4-1.25.73-1.54-2.55-.29-5.24-1.28-5.24-5.7 0-1.26.45-2.29 1.18-3.1-.12-.29-.51-1.46.11-3.04 0 0 .96-.31 3.15 1.18a10.94 10.94 0 0 1 5.74 0c2.19-1.49 3.15-1.18 3.15-1.18.62 1.58.23 2.75.11 3.04.74.81 1.18 1.84 1.18 3.1 0 4.43-2.7 5.41-5.26 5.69.41.36.78 1.06.78 2.14v3.17c0 .31.21.67.8.56C20.21 21.39 23.5 17.08 23.5 12 23.5 5.65 18.35.5 12 .5z"/></svg>
+        Code
+      </a>
+      <a class="btn primary" href="https://openreview.net/forum?id=3Dmioh6Tcm&noteId=F8neeyIOMb" target="_blank" rel="noopener">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M2 12h20"/><path d="M12 2a15 15 0 0 1 0 20 15 15 0 0 1 0-20"/></svg>
+        OpenReview
+      </a>
+      <a class="btn" href="https://cvpr.thecvf.com/media/cvpr-2026/Slides/40015.pdf" target="_blank" rel="noopener">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="3" width="20" height="14" rx="2"/><path d="M8 21h8"/><path d="M12 17v4"/></svg>
+        Slides
+      </a>
+      <a class="btn" href="https://cvpr.thecvf.com/media/PosterPDFs/CVPR%202026/40015.png?t=1779188070.71995" target="_blank" rel="noopener">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18"/><path d="M9 21V9"/></svg>
+        Poster
+      </a>
+    </div>
+  </div>
+
+  <!-- Key Insight -->
+  <div class="narrow">
+    <section class="insight reveal">
+      <p>
+        Real CBCT projections carry <em>scatter, beam-hardening, and noise</em>—uniformly fusing
+        multi-resolution hash features blends them into every level. <b>GH-NAF</b> supervises
+        each hash level <em>independently</em> with attenuation-gradient and uncertainty cues,
+        disentangling frequency content so structure survives where naïve fusion fails.
+      </p>
+    </section>
+  </div>
+</header>
+
+<!-- ============== ABSTRACT ============== -->
+<section class="block" id="abstract">
+  <div class="narrow">
+    <div class="eyebrow"><span class="num">01</span> Abstract</div>
+    <p class="body">
+      Existing NeRF-based CBCT methods assume an idealized monoenergetic setting and
+      uniformly fuse multi-resolution hash features, blending projection discrepancies and
+      heterogeneous frequencies into a single representation. We introduce <b>GH-NAF</b>,
+      which trains each hash-grid level independently under uncertainty-weighted supervision.
+      A learned attention selects coarse levels for homogeneous tissue and fine levels at
+      structural boundaries, while a discrepancy-corrected renderer absorbs scatter and
+      beam-hardening at projection time. The result is sharper boundaries, uniform
+      intra-material contrast, and reduced low-frequency bias—on both real and synthetic CBCT.
+    </p>
+  </div>
+</section>
+
+<!-- ============== CONTRIBUTIONS ============== -->
+<section class="block">
+  <div class="narrow">
+    <div class="eyebrow"><span class="num">02</span> Contributions</div>
+    <div class="contribs">
+      <div class="contrib reveal">
+        <span class="idx">i</span>
+        <h4>Hash-Level Attention</h4>
+        <p>Per-point softmax over hash levels replaces uniform concatenation for frequency-aware disentanglement.</p>
+      </div>
+      <div class="contrib reveal">
+        <span class="idx">ii</span>
+        <h4>Gradient-Guided Selection</h4>
+        <p>Attenuation-gradient soft targets, modulated by uncertainty, teach the attention which scale to trust.</p>
+      </div>
+      <div class="contrib reveal">
+        <span class="idx">iii</span>
+        <h4>Discrepancy-Aware Rendering</h4>
+        <p>A differentiable corrector absorbs scatter and beam-hardening, keeping them out of the attenuation field.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============== METHOD ============== -->
+<section class="block" id="method">
+  <div class="narrow">
+    <div class="eyebrow"><span class="num">03</span> Method</div>
+    <h2 class="heading">Independent levels, uncertainty-weighted supervision.</h2>
+
+    <figure class="fig reveal">
+      <img src="assets/method_overview.png" alt="GH-NAF pipeline overview" onerror="this.outerHTML='&lt;div class=&quot;placeholder&quot;&gt;assets/method_overview.png&lt;/div&gt;'" />
+      <figcaption>
+        <b>Overview.</b> The hash encoder ℋ with attention <i>g<sub>ϕ</sub></i> fuses level
+        features into <i>v<sub>ℓ</sub>(x)</i>; <i>F<sub>θ</sub></i> predicts (μ, σ, β²) and renders
+        log-projections that match raw measurements. Gradient-derived soft targets
+        <i>Q<sub>i</sub><sup>(r)</sup></i> align level-wise attention via KL.
+      </figcaption>
+    </figure>
+  </div>
+</section>
+
+<!-- ============== RESULTS ============== -->
+<section class="block" id="results">
+  <div class="narrow">
+    <div class="eyebrow"><span class="num">04</span> Results</div>
+
+    <div class="stats">
+      <div class="stat reveal">
+        <span class="v">+0.12</span>
+        <span class="l">MANIQA<small>chest phantom, 125 v</small></span>
+      </div>
+      <div class="stat reveal">
+        <span class="v">48.95<span class="unit"> dB</span></span>
+        <span class="l">PSNR<small>FIPS Walnut, 50 v</small></span>
+      </div>
+      <div class="stat reveal">
+        <span class="v">+2.86<span class="unit"> dB</span></span>
+        <span class="l">over NAF<small>FIPS Walnut, 25 v</small></span>
+      </div>
+      <div class="stat reveal">
+        <span class="v">13/13</span>
+        <span class="l">synthetic vols<small>top SSIM @ 50 v</small></span>
+      </div>
+    </div>
+
+    <div class="sublabel">Real-World — Chest Phantom</div>
+    <p class="body">
+      Mobile CBCT acquisition with pronounced beam-hardening. GH-NAF preserves intra-material
+      contrast where NAF, SAX, and even 720-view FDK leak shading near bone.
+    </p>
+
+    <figure class="fig reveal">
+      <img src="assets/chest_phantom_qualitative.png" alt="Chest phantom qualitative comparison" onerror="this.outerHTML='&lt;div class=&quot;placeholder&quot;&gt;assets/chest_phantom_qualitative.png&lt;/div&gt;'" />
+    </figure>
+
+    <div class="sublabel">Low-Discrepancy Reference — FIPS</div>
+    <p class="body">
+      Walnut · Pine · Seashell, 25 and 50 views. GH-NAF outperforms NAF, SAX, R²-Gaussian,
+      and Vol3DGS in PSNR/SSIM with sharper boundaries.
+    </p>
+
+    <figure class="fig reveal">
+      <img src="assets/fips_qualitative.png" alt="FIPS qualitative comparison" onerror="this.outerHTML='&lt;div class=&quot;placeholder&quot;&gt;assets/fips_qualitative.png&lt;/div&gt;'" />
+    </figure>
+
+    <div class="sublabel">Synthetic — Discrepancy-Free</div>
+    <p class="body">
+      13 volumes simulated with TIGRE. Even without the discrepancy module, hash-level
+      attention alone delivers cleaner tissue and crisper outlines.
+    </p>
+
+    <figure class="fig reveal">
+      <img src="assets/synthetic_qualitative.png" alt="Synthetic dataset qualitative comparison" onerror="this.outerHTML='&lt;div class=&quot;placeholder&quot;&gt;assets/synthetic_qualitative.png&lt;/div&gt;'" />
+    </figure>
+  </div>
+</section>
+
+<!-- ============== BIBTEX ============== -->
+<section class="block" id="bibtex">
+  <div class="narrow">
+    <div class="eyebrow"><span class="num">05</span> Citation</div>
+    <div class="bibtex-wrap">
+      <div class="bibtex-head">
+        <span>bibtex</span>
+        <button class="copy-btn" id="copyBtn" type="button">Copy</button>
+      </div>
+<pre class="bib" id="bibCode"><span class="k">@inproceedings</span>{<span class="s">ohlee2026ghnaf</span>,
+  <span class="k">title</span>     = {GH-NAF: Grid-Adaptive Hash-Level Attended Neural Attenuation
+               Fields for Discrepancy-Aware CBCT},
+  <span class="k">author</span>    = {Oh, Seong Je and Lee, Ju Hwan and Lim, Chae Yeon and
+               Lee, Donghwan and Chung, Myung Jin and Kim, Kyungsu},
+  <span class="k">booktitle</span> = {Proceedings of the IEEE/CVF Conference on Computer Vision
+               and Pattern Recognition (CVPR)},
+  <span class="k">year</span>      = {2026}
+}</pre>
+    </div>
+  </div>
+</section>
+
+<footer>
+  <div class="wide">
+    <div class="left">GH-NAF · CVPR 2026</div>
+    <div>
+      Template inspired by <a href="https://nerfies.github.io" target="_blank" rel="noopener">Nerfies</a>
+      &amp; <a href="https://shjo-april.github.io/TRACE/" target="_blank" rel="noopener">TRACE</a>.
+      Licensed under <a href="https://creativecommons.org/licenses/by-sa/4.0/" target="_blank" rel="noopener">CC BY-SA 4.0</a>.
+    </div>
+  </div>
+</footer>
+
+<script>
+  (function() {
+    var btn = document.getElementById('copyBtn');
+    var bib = document.getElementById('bibCode');
+    btn.addEventListener('click', function() {
+      navigator.clipboard.writeText(bib.innerText).then(function() {
+        btn.textContent = 'Copied ✓';
+        btn.classList.add('copied');
+        setTimeout(function() {
+          btn.textContent = 'Copy';
+          btn.classList.remove('copied');
+        }, 1600);
+      });
+    });
+  })();
+
+  (function() {
+    if (!('IntersectionObserver' in window)) {
+      document.querySelectorAll('.reveal').forEach(function(el) { el.classList.add('in'); });
+      return;
+    }
+    var io = new IntersectionObserver(function(entries) {
+      entries.forEach(function(e) {
+        if (e.isIntersecting) {
+          e.target.classList.add('in');
+          io.unobserve(e.target);
+        }
+      });
+    }, { threshold: 0.12, rootMargin: '0px 0px -40px 0px' });
+    document.querySelectorAll('.reveal').forEach(function(el) { io.observe(el); });
+  })();
+</script>
+
+</body>
+</html>
